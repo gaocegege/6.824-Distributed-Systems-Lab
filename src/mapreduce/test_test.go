@@ -140,6 +140,7 @@ func TestBasic(t *testing.T) {
 		go RunWorker(mr.MasterAddress, port("worker"+strconv.Itoa(i)),
 			MapFunc, ReduceFunc, -1)
 	}
+	fmt.Printf("work\n")
 	// Wait until MR is done
 	<-mr.DoneChannel
 	check(t, mr.file)

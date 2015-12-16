@@ -36,6 +36,9 @@ import "hash/fnv"
 // Debugging
 const Debug = 0
 
+// tricky, to make the idleWorkerChannel buffered
+const maxWorkerNumber = 10
+
 func DPrintf(format string, a ...interface{}) (n int, err error) {
 	if Debug > 0 {
 		n, err = fmt.Printf(format, a...)
@@ -64,6 +67,7 @@ type MapReduce struct {
 	Workers map[string]*WorkerInfo
 
 	// add any additional state here
+	idleWorkerChannel	chan string
 }
 
 func InitMapReduce(nmap int, nreduce int,
@@ -78,6 +82,8 @@ func InitMapReduce(nmap int, nreduce int,
 	mr.DoneChannel = make(chan bool)
 
 	// initialize any additional state here
+	mr.idleWorkerChannel = make(chan string, maxWorkerNumber)
+	
 	return mr
 }
 
@@ -92,6 +98,10 @@ func MakeMapReduce(nmap int, nreduce int,
 func (mr *MapReduce) Register(args *RegisterArgs, res *RegisterReply) error {
 	DPrintf("Register: worker %s\n", args.Worker)
 	mr.registerChannel <- args.Worker
+	
+	// set the registered worker free
+	fmt.Printf("register %s\n", args.Worker)
+	mr.idleWorkerChannel <- args.Worker
 	res.OK = true
 	return nil
 }

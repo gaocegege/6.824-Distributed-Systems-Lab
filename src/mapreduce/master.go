@@ -30,5 +30,68 @@ func (mr *MapReduce) KillWorkers() *list.List {
 
 func (mr *MapReduce) RunMaster() *list.List {
 	// Your code here
+	fmt.Printf("Welcome to my code in master.RunMaster()  :)")
+	
+	mapDoneChannel := make(chan int, mr.nMap)
+	reduceDoneChannel := make(chan int, mr.nReduce)
+	
+	for i := 0; i < mr.nMap; i++ {
+		go func (jobNumber int)  {
+			// get the idle  worker
+			worker := <- mr.idleWorkerChannel
+			fmt.Printf("jobnum: %d, %s", jobNumber, ", work down:)\n")
+			
+			// set the jobargs and reply
+			jobArgs := &DoJobArgs{}
+			jobReply := &DoJobReply{}
+			jobArgs.NumOtherPhase = mr.nReduce
+			jobArgs.Operation = Map
+			jobArgs.File = mr.file
+			jobArgs.JobNumber = jobNumber
+			
+			// call worker.DoJob
+			ok := call(worker, "Worker.DoJob", jobArgs, jobReply)
+			if ok == true {
+				fmt.Printf("jobnum: %d, %s", jobNumber, ", work down:)")
+				mr.idleWorkerChannel <- worker
+				mapDoneChannel <- jobNumber
+				return
+			}
+		}(i)
+	}
+	
+	for i := 0; i < mr.nMap; i++ {
+		<- mapDoneChannel
+	}
+	
+	for i := 0; i < mr.nReduce; i++ {
+		go func (jobNumber int)  {
+			// get the idle  worker
+			worker := <- mr.idleWorkerChannel
+			
+			// set the jobargs and reply
+			jobArgs := &DoJobArgs{}
+			jobReply := &DoJobReply{}
+			jobArgs.NumOtherPhase = mr.nMap
+			jobArgs.Operation = Reduce
+			jobArgs.File = mr.file
+			jobArgs.JobNumber = jobNumber
+			
+			// call worker.DoJob
+			ok := call(worker, "Worker.DoJob", jobArgs, jobReply)
+			if ok == true {
+				mr.idleWorkerChannel <- worker
+				reduceDoneChannel <- jobNumber
+				return
+			}
+		}(i)
+	}
+	
+	for i := 0; i < mr.nReduce; i++ {
+		<- reduceDoneChannel
+	}
+	
+	fmt.Println("Map Jobs are all done.")
+	
 	return mr.KillWorkers()
 }
