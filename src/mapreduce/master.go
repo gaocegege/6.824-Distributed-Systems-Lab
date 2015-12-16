@@ -30,8 +30,6 @@ func (mr *MapReduce) KillWorkers() *list.List {
 
 func (mr *MapReduce) RunMaster() *list.List {
 	// Your code here
-	fmt.Printf("Welcome to my code in master.RunMaster()  :)")
-	
 	mapDoneChannel := make(chan int, mr.nMap)
 	reduceDoneChannel := make(chan int, mr.nReduce)
 	
@@ -39,7 +37,6 @@ func (mr *MapReduce) RunMaster() *list.List {
 		go func (jobNumber int)  {
 			// get the idle  worker
 			worker := <- mr.idleWorkerChannel
-			fmt.Printf("jobnum: %d, %s", jobNumber, ", work down:)\n")
 			
 			// set the jobargs and reply
 			jobArgs := &DoJobArgs{}
@@ -52,7 +49,6 @@ func (mr *MapReduce) RunMaster() *list.List {
 			// call worker.DoJob
 			ok := call(worker, "Worker.DoJob", jobArgs, jobReply)
 			if ok == true {
-				fmt.Printf("jobnum: %d, %s", jobNumber, ", work down:)")
 				mr.idleWorkerChannel <- worker
 				mapDoneChannel <- jobNumber
 				return
@@ -91,7 +87,7 @@ func (mr *MapReduce) RunMaster() *list.List {
 		<- reduceDoneChannel
 	}
 	
-	fmt.Println("Map Jobs are all done.")
+	fmt.Println("Jobs are all done.")
 	
 	return mr.KillWorkers()
 }

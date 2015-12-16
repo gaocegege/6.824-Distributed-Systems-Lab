@@ -102,8 +102,6 @@ func (mr *MapReduce) Register(args *RegisterArgs, res *RegisterReply) error {
 	
 	// comment this because it will block, registerChannel is synchronized.
 	// mr.registerChannel <- args.Worker
-	
-	fmt.Printf("register %s\n", args.Worker)
 	res.OK = true
 	return nil
 }
