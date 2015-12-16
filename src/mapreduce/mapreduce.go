@@ -97,11 +97,13 @@ func MakeMapReduce(nmap int, nreduce int,
 
 func (mr *MapReduce) Register(args *RegisterArgs, res *RegisterReply) error {
 	DPrintf("Register: worker %s\n", args.Worker)
-	mr.registerChannel <- args.Worker
-	
 	// set the registered worker free
-	fmt.Printf("register %s\n", args.Worker)
 	mr.idleWorkerChannel <- args.Worker
+	
+	// comment this because it will block, registerChannel is synchronized.
+	// mr.registerChannel <- args.Worker
+	
+	fmt.Printf("register %s\n", args.Worker)
 	res.OK = true
 	return nil
 }
