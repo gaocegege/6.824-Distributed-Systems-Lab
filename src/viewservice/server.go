@@ -53,7 +53,7 @@ func (vs *ViewServer) setPrimary(args PingArgs) {
 // set the backup
 //
 func (vs *ViewServer) setBackup(args PingArgs) {
-    log.Printf("[viewserver.setBackup]: set %s as backup", args.Me)
+    // log.Printf("[viewserver.setBackup]: set %s as backup", args.Me)
 	vs.view.Backup = args.Me
 	vs.view.Viewnum++
 	vs.pingMap[args.Me] = vs.currentTick
@@ -118,9 +118,9 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
 
 	// Your code here.
 	vs.mu.Lock()
-	log.Printf("[viewserver.Ping]: Ping %s with ack view %d", args.Me, args.Viewnum)
-	log.Printf("[viewserver.Ping]: currentTick %d", vs.currentTick)
-	log.Printf("[viewserver.Ping]: primary ACK %d, viewNum %d", vs.ackMap[vs.getPrimary()], vs.view.Viewnum)
+	// log.Printf("[viewserver.Ping]: Ping %s with ack view %d", args.Me, args.Viewnum)
+	// log.Printf("[viewserver.Ping]: currentTick %d", vs.currentTick)
+	// log.Printf("[viewserver.Ping]: primary ACK %d, viewNum %d", vs.ackMap[vs.getPrimary()], vs.view.Viewnum)
 	switch {
 	// first server ping
 	case !vs.hasPrimary() && vs.view.Viewnum == 0:
@@ -148,7 +148,7 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
 		}
 	}
 	reply.View = vs.view
-	log.Println("[viewserver.Ping]: reply view ", reply.View)
+	// log.Println("[viewserver.Ping]: reply view ", reply.View)
 	vs.mu.Unlock()
 	return nil
 }
@@ -161,7 +161,7 @@ func (vs *ViewServer) Get(args *GetArgs, reply *GetReply) error {
 	// Your code here.
 	vs.mu.Lock()
 	reply.View = vs.view
-	log.Printf("[viewserver.Get]: Get View %d, %s, %s", reply.View.Viewnum, reply.View.Primary, reply.View.Backup)
+	// log.Printf("[viewserver.Get]: Get View %d, %s, %s", reply.View.Viewnum, reply.View.Primary, reply.View.Backup)
 	vs.mu.Unlock()
 	return nil
 }
@@ -178,12 +178,12 @@ func (vs *ViewServer) tick() {
 	vs.currentTick++
 	// must check the backup first, because the primary check will destroy the backup state
 	if vs.hasBackup() && vs.currentTick-vs.pingMap[vs.getBackup()] >= DeadPings && vs.isPrimaryAck() {
-		log.Printf("[viewserver.tick]: backup outdate")
+		// log.Printf("[viewserver.tick]: backup outdate")
 		vs.view.Backup = ""
 		vs.view.Viewnum++
 	}
 	if vs.currentTick-vs.pingMap[vs.getPrimary()] >= DeadPings && vs.isPrimaryAck() {
-		log.Printf("[viewserver.tick]: primary outdate")
+		// log.Printf("[viewserver.tick]: primary outdate")
 		vs.promoteBackup()
 	}
 	vs.mu.Unlock()
