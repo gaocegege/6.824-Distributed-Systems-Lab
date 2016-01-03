@@ -129,7 +129,7 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
 	// is the primary, whether has backup or not
 	case vs.isPrimary(args.Me):
 		// primary crash and reboot
-		if vs.view.Viewnum == 0 {
+		if args.Viewnum == 0 {
 			vs.promoteBackup()
 		} else {
 			vs.ackMap[vs.getPrimary()] = args.Viewnum
@@ -138,7 +138,6 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
 
 	// no backup, has a primary
 	case vs.hasPrimary() && !vs.hasBackup() && vs.isPrimaryAck():
-		log.Printf("[debug]--------------------")
 		vs.setBackup(*args)
 
 	case vs.isBackup(args.Me):
