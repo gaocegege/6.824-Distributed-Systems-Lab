@@ -159,10 +159,13 @@ func (mr *MapReduce) Split(fileName string) {
 	if err != nil {
 		log.Fatal("Split: ", err)
 	}
+	
+	// nchunk is the size of each split file
 	size := fi.Size()
 	nchunk := size / int64(mr.nMap)
 	nchunk += 1
-
+	
+	// first split file
 	outfile, err := os.Create(MapName(fileName, 0))
 	if err != nil {
 		log.Fatal("Split: ", err)
@@ -170,7 +173,8 @@ func (mr *MapReduce) Split(fileName string) {
 	writer := bufio.NewWriter(outfile)
 	m := 1
 	i := 0
-
+	
+	// other split files
 	scanner := bufio.NewScanner(infile)
 	for scanner.Scan() {
 		if int64(i) > nchunk*int64(m) {
@@ -219,7 +223,10 @@ func DoMap(JobNumber int, fileName string,
 		log.Fatal("DoMap: ", err)
 	}
 	file.Close()
+	
+	// run the user code Map(value string)
 	res := Map(string(b))
+	
 	// XXX a bit inefficient. could open r files and run over list once
 	for r := 0; r < nreduce; r++ {
 		file, err = os.Create(ReduceName(fileName, JobNumber, r))
